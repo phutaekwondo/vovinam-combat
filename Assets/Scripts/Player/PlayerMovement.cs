@@ -12,7 +12,6 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float gravity = -5f; // unit / second
 
     float blendVelocity = 0f;
-
     private float acceleration = 10f;
     private float sqrRunVelocity = 100f;
 
@@ -58,15 +57,6 @@ public class PlayerMovement : MonoBehaviour
 
     private void applyAnimation()
     {
-        Vector3 horizontalVelocity = getHorizontalVector(characterController.velocity);
-        float squaredMagnitude = horizontalVelocity.sqrMagnitude;
-        float targetVelocity = Mathf.Sqrt(squaredMagnitude / sqrRunVelocity);
-
         animator.SetFloat("velocity", blendVelocity / runVelocity);
-    }
-
-    private Vector3 getHorizontalVector(Vector3 vec)
-    {
-        return new Vector3(vec.x, 0, vec.z);
     }
 }
