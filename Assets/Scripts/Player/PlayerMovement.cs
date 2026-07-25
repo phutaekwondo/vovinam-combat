@@ -8,14 +8,68 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private InputActionReference moveInput;
     [SerializeField] private InputActionReference sprintInput;
     [SerializeField] private float walkSpeed = 5f; // unit / second
-    [SerializeField] private float runSpeed = 10f; // unit / second
+    [SerializeField] private float runVelocity = 10f; // unit / second
+
+    float blendVelocity = 0f;
+
+    private float acceleration = 10f;
+    private float sqrRunVelocity = 100f;
+
+    private void Awake()
+    {
+        sqrRunVelocity = runVelocity * runVelocity;
+    }
 
     private void Update()
     {
+        applyMovement();
+        applyAnimation();
+    }
+
+    private void applyMovement()
+    {
         Vector2 moveInputDirection = moveInput.action.ReadValue<Vector2>();
-        bool isSprinting = sprintInput.action.ReadValue<float>() > 0.5f;
-        float speed = isSprinting ? this.runSpeed : this.walkSpeed;
-        Vector3 moveVector = new Vector3(moveInputDirection.x, 0, moveInputDirection.y) * Time.deltaTime * speed;
-        this.characterController.Move(moveVector);
+        float targetVelocity = getTargetVelocity(moveInputDirection);
+        blendVelocity = Mathf.Lerp(blendVelocity, targetVelocity, Time.deltaTime * acceleration);
+
+        float moveDistance = Time.deltaTime * blendVelocity;
+        float gravity = getGravity();
+        Vector3 moveVector = new Vector3(moveInputDirection.x, gravity, moveInputDirection.y) * moveDistance;
+        characterController.Move(moveVector);
+    }
+
+    private float getTargetVelocity(Vector2 moveInput)
+    {
+        if (moveInput.sqrMagnitude > 0.1f)
+        {
+            bool isSprinting = sprintInput.action.ReadValue<float>() > 0.5f;
+            float velocity = isSprinting ? runVelocity : walkSpeed;
+            return velocity;
+        }
+
+        return 0f;
+    }
+
+    private float getGravity()
+    {
+        if (characterController.isGrounded)
+        {
+            return 0f;
+        }
+        return -9.81f;
+    }
+
+    private void applyAnimation()
+    {
+        Vector3 horizontalVelocity = getHorizontalVector(characterController.velocity);
+        float squaredMagnitude = horizontalVelocity.sqrMagnitude;
+        float targetVelocity = Mathf.Sqrt(squaredMagnitude / sqrRunVelocity);
+
+        animator.SetFloat("velocity", blendVelocity / runVelocity);
+    }
+
+    private Vector3 getHorizontalVector(Vector3 vec)
+    {
+        return new Vector3(vec.x, 0, vec.z);
     }
 }
