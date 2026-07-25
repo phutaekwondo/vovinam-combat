@@ -12,12 +12,15 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float gravity = -5f; // unit / second
 
     float blendVelocity = 0f;
-    private float acceleration = 10f;
-    private float sqrRunVelocity = 100f;
+    float blendRotation = 0f;
+    float acceleration = 10f;
+    GameObject playerModel;
+
 
     private void Awake()
     {
-        sqrRunVelocity = runVelocity * runVelocity;
+        playerModel = animator.gameObject;
+        blendRotation = playerModel.transform.rotation.y;
     }
 
     private void Update()
@@ -36,6 +39,39 @@ public class PlayerMovement : MonoBehaviour
         float gravity = getGravity();
         Vector3 moveVector = new Vector3(moveInputDirection.x, gravity, moveInputDirection.y) * moveDistance;
         characterController.Move(moveVector);
+
+        applyRotation(moveInputDirection);
+    }
+
+    private void applyRotation(Vector2 moveInputDirection)
+    {
+        if (moveInputDirection.sqrMagnitude > 0.1f)
+        {
+            float targetRotation = getTargetRotation(moveInputDirection);
+
+            blendRotation = Mathf.Lerp(blendRotation, targetRotation, Time.deltaTime * acceleration);
+            playerModel.transform.rotation = Quaternion.Euler(0f, blendRotation, 0f);
+        }
+    }
+
+    private float getTargetRotation(Vector2 moveInputDirection)
+    {
+        float currentRotation = blendRotation;
+        float targetRotation = Mathf.Atan2(moveInputDirection.x, moveInputDirection.y) * Mathf.Rad2Deg;
+
+        while (Mathf.Abs(targetRotation - currentRotation) > 180f)
+        {
+            if (targetRotation - currentRotation > 180f)
+            {
+                targetRotation -= 360f;
+            }
+            else
+            {
+                targetRotation += 360f;
+            }
+        }
+
+        return targetRotation;
     }
 
     private float getTargetVelocity(Vector2 moveInput)
