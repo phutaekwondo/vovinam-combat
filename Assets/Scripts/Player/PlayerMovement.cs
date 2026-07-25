@@ -9,6 +9,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private InputActionReference sprintInput;
     [SerializeField] private float walkSpeed = 5f; // unit / second
     [SerializeField] private float runVelocity = 10f; // unit / second
+    [SerializeField] private float gravity = -5f; // unit / second
 
     float blendVelocity = 0f;
 
@@ -52,11 +53,7 @@ public class PlayerMovement : MonoBehaviour
 
     private float getGravity()
     {
-        if (characterController.isGrounded)
-        {
-            return 0f;
-        }
-        return -9.81f;
+        return characterController.isGrounded ? 0f : gravity;
     }
 
     private void applyAnimation()
