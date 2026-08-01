@@ -7,21 +7,34 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private CharacterController characterController;
     [SerializeField] private InputActionReference moveInput;
     [SerializeField] private InputActionReference sprintInput;
+    [SerializeField] private InputActionReference jumpInput;
     [SerializeField] private Transform cameraTransform;
     [SerializeField] private float walkSpeed = 5f; // unit / second
     [SerializeField] private float runVelocity = 10f; // unit / second
-    [SerializeField] private float gravity = -5f; // unit / second
+    [SerializeField] private float jumpHeight = 1.2f;
+    [SerializeField] private float gravity = -15f; // unit / second^2
 
     float blendVelocity = 0f;
     float blendRotation = 0f;
+    float verticalVelocity = 0f;
     float acceleration = 10f;
     GameObject playerModel;
+    InputAction jumpAction;
 
 
     private void Awake()
     {
         playerModel = animator.gameObject;
         blendRotation = playerModel.transform.eulerAngles.y;
+
+        if (jumpInput != null)
+        {
+            jumpAction = jumpInput.action;
+        }
+        else if (TryGetComponent(out PlayerInput playerInput) && playerInput.actions != null)
+        {
+            jumpAction = playerInput.actions.FindAction("Jump");
+        }
     }
 
     private void Update()
@@ -36,13 +49,46 @@ public class PlayerMovement : MonoBehaviour
         float targetVelocity = getTargetVelocity(moveInputDirection);
         blendVelocity = Mathf.Lerp(blendVelocity, targetVelocity, Time.deltaTime * acceleration);
 
+        applyJumpAndGravity();
+
         float moveDistance = Time.deltaTime * blendVelocity;
-        float gravity = getGravity();
         Vector3 moveDirection = getCameraRelativeDirection(moveInputDirection);
-        Vector3 moveVector = new Vector3(moveDirection.x, gravity, moveDirection.z) * moveDistance;
+        Vector3 moveVector = new Vector3(moveDirection.x, 0f, moveDirection.z) * moveDistance;
+        moveVector.y = verticalVelocity * Time.deltaTime;
         characterController.Move(moveVector);
 
         applyRotation(moveDirection);
+    }
+
+    private void applyJumpAndGravity()
+    {
+        if (characterController.isGrounded)
+        {
+            animator.SetBool("Jump", false);
+            animator.SetBool("FreeFall", false);
+
+            if (verticalVelocity < 0f)
+            {
+                verticalVelocity = -2f;
+            }
+
+            if (wasJumpPressed())
+            {
+                verticalVelocity = Mathf.Sqrt(jumpHeight * -2f * gravity);
+                animator.SetBool("Jump", true);
+            }
+        }
+        else if (verticalVelocity < 0f)
+        {
+            animator.SetBool("FreeFall", true);
+        }
+
+        verticalVelocity += gravity * Time.deltaTime;
+    }
+
+    private bool wasJumpPressed()
+    {
+        return jumpAction != null && jumpAction.WasPressedThisFrame();
     }
 
     private Vector3 getCameraRelativeDirection(Vector2 moveInputDirection)
@@ -105,13 +151,9 @@ public class PlayerMovement : MonoBehaviour
         return 0f;
     }
 
-    private float getGravity()
-    {
-        return characterController.isGrounded ? 0f : gravity;
-    }
-
     private void applyAnimation()
     {
         animator.SetFloat("velocity", blendVelocity / runVelocity);
+        animator.SetBool("Grounded", characterController.isGrounded);
     }
 }

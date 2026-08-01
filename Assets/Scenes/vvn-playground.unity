@@ -854,10 +854,12 @@ MonoBehaviour:
   characterController: {fileID: 1730904070}
   moveInput: {fileID: -896014167412382682, guid: ad6b201f783fd5b43bf51b9fe64529e8, type: 3}
   sprintInput: {fileID: -384690147571400997, guid: ad6b201f783fd5b43bf51b9fe64529e8, type: 3}
+  jumpInput: {fileID: 0}
   cameraTransform: {fileID: 336544146}
   walkSpeed: 1.8
   runVelocity: 8
-  gravity: -4.5
+  jumpHeight: 1.2
+  gravity: -15
 --- !u!143 &1730904070
 CharacterController:
   m_ObjectHideFlags: 0
