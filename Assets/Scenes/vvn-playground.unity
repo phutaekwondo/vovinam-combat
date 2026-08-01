@@ -250,7 +250,7 @@ Transform:
   m_GameObject: {fileID: 336544142}
   serializedVersion: 2
   m_LocalRotation: {x: 0.09353574, y: -0, z: -0, w: 0.995616}
-  m_LocalPosition: {x: 0, y: 0.26, z: -2.79}
+  m_LocalPosition: {x: 0, y: 0.96, z: -2.657}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -857,7 +857,7 @@ MonoBehaviour:
   cameraTransform: {fileID: 336544146}
   walkSpeed: 1.8
   runVelocity: 8
-  gravity: -5
+  gravity: -4.5
 --- !u!143 &1730904070
 CharacterController:
   m_ObjectHideFlags: 0
